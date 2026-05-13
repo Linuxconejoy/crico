@@ -1,0 +1,21 @@
+directories:
+  output: dist
+  buildResources: build
+appId: so.clicky.windows
+productName: Clicky
+files:
+  - filter:
+      - src/**/*
+      - package.json
+win:
+  icon: build/icon.ico
+  requestedExecutionLevel: asInvoker
+  signAndEditExecutable: false
+  target:
+    - nsis
+    - portable
+portable:
+  artifactName: ${productName} Portable ${version}.${ext}
+nsis:
+  artifactName: ${productName} Setup ${version}.${ext}
+electronVersion: 41.5.0
