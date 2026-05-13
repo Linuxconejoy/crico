@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Clicky</title>
+    <link rel="stylesheet" href="./panel.css" />
+  </head>
+  <body>
+    <div class="panel-shell">
+      <header class="hero-card">
+        <div class="hero-mark">C</div>
+        <div class="hero-copy">
+          <p class="eyebrow">Windows companion</p>
+          <h1>Clicky</h1>
+          <p class="hero-text">
+            Your tray buddy that remembers your workflow, adapts to the app in focus, and can act on your machine when agent mode is on.
+          </p>
+        </div>
+        <div class="status-badge" id="status-badge">ready</div>
+      </header>
+
+      <section class="settings-card" id="backend-onboarding-card" hidden>
+        <div class="section-heading">
+          <h2>Backend setup</h2>
+          <span class="section-note" id="backend-onboarding-badge">action needed</span>
+        </div>
+        <div class="context-panel">
+          <span class="meta-label" id="backend-onboarding-label">Before first use</span>
+          <strong id="backend-onboarding-title">Connect your Worker backend</strong>
+          <p id="backend-onboarding-copy">
+            Add a live Worker URL in Settings, then test `/chat`, `/tts`, and `/transcribe-token` before using voice or manual prompts.
+          </p>
+        </div>
+      </section>
+
+      <section class="session-card">
+        <div class="section-heading">
+          <h2>Live session</h2>
+          <button id="clear-history-button" class="ghost-button" type="button">clear chat</button>
+        </div>
+        <div class="session-meta">
+          <div>
+            <span class="meta-label">Shortcut</span>
+            <strong id="shortcut-label">Ctrl + Alt</strong>
+            <span class="meta-note" id="shortcut-mode-note">Hold to talk globally.</span>
+          </div>
+          <div>
+            <span class="meta-label">Model</span>
+            <strong id="active-model-label">claude-sonnet-4-6</strong>
+          </div>
+        </div>
+        <div class="bubble-stack">
+          <article class="bubble bubble-user">
+            <span class="bubble-label">you</span>
+            <p id="transcript-output">Hold Ctrl + Alt to talk, or send a manual prompt below.</p>
+          </article>
+          <article class="bubble bubble-assistant">
+            <span class="bubble-label">clicky</span>
+            <p id="response-output">I will stream the answer here, then speak it out loud if autoplay is enabled.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="settings-card" id="agent-approval-card" hidden>
+        <div class="section-heading">
+          <h2>Agent approval</h2>
+          <span class="section-note" id="agent-approval-badge">action blocked</span>
+        </div>
+        <div class="context-panel context-panel-full">
+          <span class="meta-label" id="agent-approval-tool-name">write_file</span>
+          <strong id="agent-approval-title">approval needed</strong>
+          <p id="agent-approval-summary">Clicky wants to perform a sensitive local action.</p>
+          <p id="agent-approval-detail" class="field-note">Review the request and allow it only if it matches what you want.</p>
+        </div>
+        <label class="input-label" for="agent-approval-preview">Requested payload</label>
+        <textarea id="agent-approval-preview" rows="8" readonly></textarea>
+        <div class="button-grid">
+          <button id="agent-approval-deny-button" class="ghost-button" type="button">deny</button>
+          <button id="agent-approval-approve-button" class="primary-button" type="button">approve</button>
+        </div>
+      </section>
+
+      <section class="session-card" id="walkthrough-card" hidden>
+        <div class="section-heading">
+          <h2>Guided walkthrough</h2>
+          <span class="section-note" id="walkthrough-progress-label">step 1 of 3</span>
+        </div>
+        <div class="context-panel context-panel-full">
+          <span class="meta-label">Current plan</span>
+          <strong id="walkthrough-title">guided walkthrough</strong>
+          <p id="walkthrough-step-title">Step title</p>
+          <p id="walkthrough-step-copy">Current spoken instruction will appear here.</p>
+        </div>
+        <p class="field-note" id="walkthrough-note">The plan is based on the screenshots from when the walkthrough started. Refresh it if the screen changes a lot.</p>
+        <div class="button-grid button-grid-compact">
+          <button id="walkthrough-repeat-button" class="ghost-button" type="button">repeat</button>
+          <button id="walkthrough-next-button" class="secondary-button" type="button">next step</button>
+        </div>
+        <button id="walkthrough-end-button" class="ghost-button" type="button">end walkthrough</button>
+      </section>
+
+      <section class="composer-card">
+        <div class="section-heading">
+          <h2>Manual prompt</h2>
+          <span class="section-note">Captures every display before sending.</span>
+        </div>
+        <label class="input-label" for="manual-prompt-input">Ask without voice</label>
+        <textarea id="manual-prompt-input" rows="5" placeholder="Open a file, inspect code, explain what is on my screen, or help me find a button."></textarea>
+        <button id="send-manual-prompt-button" class="primary-button" type="button">send with screenshots</button>
+      </section>
+
+      <section class="context-card">
+        <div class="section-heading">
+          <h2>Detected context</h2>
+          <span class="section-note">Updates from the focused app</span>
+        </div>
+        <div class="context-grid">
+          <div class="context-panel">
+            <span class="meta-label">Focused app</span>
+            <strong id="current-app-name">waiting for focused app</strong>
+          </div>
+          <div class="context-panel">
+            <span class="meta-label">Mode</span>
+            <strong id="current-mode-label">general</strong>
+          </div>
+        </div>
+        <div class="context-panel context-panel-full">
+          <span class="meta-label">Window title</span>
+          <p id="current-window-title">No active window detected yet.</p>
+        </div>
+        <div class="context-panel context-panel-full">
+          <span class="meta-label">Project hint</span>
+          <p id="current-project-hint">No project hint yet.</p>
+        </div>
+      </section>
+
+      <section class="memory-card">
+        <div class="section-heading">
+          <h2>Persistent memory</h2>
+          <span class="section-note">Stored locally as categorized json</span>
+        </div>
+        <div class="context-panel context-panel-full">
+          <span class="meta-label">Privacy controls</span>
+          <p>Profile memory stays on this machine. Clicky now organizes it into active projects, pending issues, and decisions made so agent context is easier to audit and update.</p>
+        </div>
+        <label class="input-label" for="preferred-language-input">Preferred language</label>
+        <input id="preferred-language-input" type="text" spellcheck="false" placeholder="es, en, pt..." />
+
+        <label class="input-label" for="active-projects-input">Active projects</label>
+        <textarea id="active-projects-input" rows="4" placeholder="One project per line"></textarea>
+
+        <label class="input-label" for="pending-issues-input">Pending issues</label>
+        <textarea id="pending-issues-input" rows="4" placeholder="Open bugs, blockers, follow-ups, or unresolved tasks"></textarea>
+
+        <label class="input-label" for="decisions-made-input">Decisions made</label>
+        <textarea id="decisions-made-input" rows="5" placeholder="Architecture choices, conventions, or durable decisions Clicky should remember"></textarea>
+
+        <button id="save-memory-button" class="secondary-button" type="button">save memory</button>
+        <div class="button-grid">
+          <button id="reset-memory-profile-button" class="ghost-button" type="button">reset profile</button>
+          <button id="clear-app-contexts-button" class="ghost-button" type="button">clear app context history</button>
+        </div>
+        <button id="clear-all-memory-button" class="danger-button" type="button">delete all saved memory</button>
+      </section>
+
+      <section class="settings-card">
+        <div class="section-heading">
+          <h2>Settings</h2>
+          <span class="section-note" id="version-label">v0.1.0</span>
+        </div>
+        <label class="input-label" for="worker-url-input">Worker URL</label>
+        <input id="worker-url-input" type="text" spellcheck="false" />
+
+        <label class="input-label" for="worker-auth-header-name-input">Worker auth header name (optional)</label>
+        <input id="worker-auth-header-name-input" type="text" spellcheck="false" placeholder="x-clicky-app-key" />
+
+        <label class="input-label" for="worker-auth-header-value-input">Worker auth header value (optional)</label>
+        <input id="worker-auth-header-value-input" type="password" spellcheck="false" placeholder="Shared app key or other backend secret" />
+
+        <div class="context-panel context-panel-full">
+          <span class="meta-label">Worker health</span>
+          <strong id="worker-health-summary">Backend setup required</strong>
+          <p id="worker-health-note">Clicky needs a live backend before voice, chat, and TTS can work.</p>
+        </div>
+
+        <div class="context-grid">
+          <div class="context-panel">
+            <span class="meta-label">/chat</span>
+            <strong id="chat-health-status">setup required</strong>
+            <p id="chat-health-detail">Waiting for a valid Worker URL.</p>
+          </div>
+          <div class="context-panel">
+            <span class="meta-label">/tts</span>
+            <strong id="tts-health-status">setup required</strong>
+            <p id="tts-health-detail">Waiting for a valid Worker URL.</p>
+          </div>
+        </div>
+
+        <div class="context-panel context-panel-full">
+          <span class="meta-label">/transcribe-token</span>
+          <strong id="transcribe-health-status">setup required</strong>
+          <p id="transcribe-health-detail">Waiting for a valid Worker URL.</p>
+        </div>
+
+        <label class="input-label" for="model-select">Claude model</label>
+        <select id="model-select">
+          <option value="claude-sonnet-4-6">Claude Sonnet 4.6</option>
+          <option value="claude-opus-4-6">Claude Opus 4.6</option>
+        </select>
+
+        <label class="input-label" for="screen-capture-mode-select">Background capture scope</label>
+        <select id="screen-capture-mode-select">
+          <option value="cursor-display">Cursor display only</option>
+          <option value="all-displays">All displays</option>
+        </select>
+        <p class="field-note">Used by proactive nudges and background analysis. Live voice and manual prompts still capture all displays so pointing accuracy stays intact.</p>
+
+        <label class="input-label" for="visual-history-retention-days-input">Visual history retention (days)</label>
+        <input id="visual-history-retention-days-input" type="number" min="1" max="90" step="1" />
+        <p class="field-note">Older saved screenshots are pruned automatically on launch and whenever you save settings.</p>
+
+        <label class="toggle-row" for="show-clicky-toggle">
+          <div>
+            <strong>Show Clicky when idle</strong>
+            <p>Keep the overlay companion visible even when nothing is happening.</p>
+          </div>
+          <input id="show-clicky-toggle" type="checkbox" />
+        </label>
+
+        <label class="toggle-row" for="auto-play-speech-toggle">
+          <div>
+            <strong>Auto play speech</strong>
+            <p>Read the answer out loud through ElevenLabs as soon as it returns.</p>
+          </div>
+          <input id="auto-play-speech-toggle" type="checkbox" />
+        </label>
+
+        <label class="toggle-row" for="agent-mode-toggle">
+          <div>
+            <strong>Agent mode</strong>
+            <p>Let Clicky open paths, inspect local code, run commands like npm, git, or python with approval, and perform direct system actions only when you explicitly ask by voice.</p>
+          </div>
+          <input id="agent-mode-toggle" type="checkbox" />
+        </label>
+
+        <label class="toggle-row" for="permissive-dev-mode-toggle">
+          <div>
+            <strong>Permissive dev mode</strong>
+            <p>Disable agent approvals, route manual prompts through the acting agent, and expand access to non-protected paths. Windows, Program Files, browser profiles, and secret stores still stay blocked.</p>
+          </div>
+          <input id="permissive-dev-mode-toggle" type="checkbox" />
+        </label>
+
+        <label class="toggle-row" for="guided-walkthrough-toggle">
+          <div>
+            <strong>Guided walkthrough mode</strong>
+            <p>Turn help into a short step-by-step plan with next and repeat controls. Agent mode still takes precedence when it is on.</p>
+          </div>
+          <input id="guided-walkthrough-toggle" type="checkbox" />
+        </label>
+
+        <label class="toggle-row" for="context-aware-mode-toggle">
+          <div>
+            <strong>Context-aware behavior</strong>
+            <p>Adapt help automatically for code, creative, browser, writing, or terminal work.</p>
+          </div>
+          <input id="context-aware-mode-toggle" type="checkbox" />
+        </label>
+
+        <label class="toggle-row" for="passive-visual-context-toggle">
+          <div>
+            <strong>Passive visual context</strong>
+            <p>Watch the selected displays in the background and detect screen changes even when you do not manually prompt Clicky.</p>
+          </div>
+          <input id="passive-visual-context-toggle" type="checkbox" />
+        </label>
+
+        <label class="toggle-row" for="visual-history-toggle">
+          <div>
+            <strong>Visual history</strong>
+            <p>Save local screenshots and summaries from important moments for future recall.</p>
+          </div>
+          <input id="visual-history-toggle" type="checkbox" />
+        </label>
+
+        <label class="toggle-row" for="auto-triggers-toggle">
+          <div>
+            <strong>Automatic triggers</strong>
+            <p>Proactively nudge you when the same screen stalls or a visible blocker appears.</p>
+          </div>
+          <input id="auto-triggers-toggle" type="checkbox" />
+        </label>
+
+        <button id="check-worker-health-button" class="secondary-button" type="button">test backend</button>
+        <button id="save-settings-button" class="secondary-button" type="button">save settings</button>
+      </section>
+
+      <section class="history-card">
+        <div class="section-heading">
+          <h2>Visual history</h2>
+          <button id="clear-visual-history-button" class="ghost-button" type="button">clear visuals</button>
+        </div>
+        <span class="section-note">Recent saved moments</span>
+        <ul id="visual-history-list" class="history-list"></ul>
+      </section>
+
+      <section class="proactive-card">
+        <div class="section-heading">
+          <h2>Passive visual context</h2>
+          <span class="section-note" id="passive-visual-status-output">off</span>
+        </div>
+        <p id="passive-visual-summary-output" class="proactive-text">
+          Enable passive visual context to watch for app or screen changes in the background.
+        </p>
+      </section>
+
+      <section class="proactive-card">
+        <div class="section-heading">
+          <h2>Proactive nudges</h2>
+          <span class="section-note">Latest automatic suggestion</span>
+        </div>
+        <p id="proactive-suggestion-output" class="proactive-text">No proactive nudge yet.</p>
+      </section>
+
+      <p id="error-banner" class="error-banner" hidden></p>
+    </div>
+
+    <script type="module" src="./panel.js"></script>
+  </body>
+</html>

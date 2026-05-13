@@ -1,12 +1,48 @@
 {
-  "name": "clicky-proxy",
+  "name": "clicky-windows",
   "private": true,
+  "version": "0.1.0",
+  "description": "Windows tray companion version of Clicky",
+  "author": "OpenAI Codex",
+  "type": "module",
+  "main": "src/main/main.js",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
-    "test": "node --no-warnings --test --test-isolation=none test/*.test.mjs"
+    "start": "electron .",
+    "check": "node --check src/main/main.js && node --check src/main/configStore.js && node --check src/main/agentTools.js && node --check src/main/foregroundApp.js && node --check src/main/globalPushToTalk.js && node --check src/main/memoryStore.js && node --check src/main/systemControl.js && node --check src/panel/panel.js && node --check src/panel/agentLoop.js && node --check src/panel/contextSummaries.js && node --check src/panel/clickyApi.js && node --check src/panel/assemblyAiStreamingSession.js && node --check src/overlay/overlay.js && node --check src/shared/agentModePolicy.js && node --check src/shared/agentToolDefinitions.js && node --check src/shared/chatCompletionErrors.js && node --check src/shared/persistentMemorySchema.js && node --check src/shared/pointing.js && node --check src/shared/systemControlPolicy.js && node --check src/shared/systemPrompt.js && node --test",
+    "test": "node --test",
+    "dist": "electron-builder --win",
+    "dist:installer": "electron-builder --win nsis",
+    "dist:portable": "electron-builder --win portable"
   },
   "devDependencies": {
-    "wrangler": "^4.90.0"
+    "electron": "^41.5.0",
+    "electron-builder": "^26.8.1"
+  },
+  "build": {
+    "appId": "so.clicky.windows",
+    "productName": "Clicky",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "requestedExecutionLevel": "asInvoker",
+      "signAndEditExecutable": false,
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "portable": {
+      "artifactName": "${productName} Portable ${version}.${ext}"
+    },
+    "nsis": {
+      "artifactName": "${productName} Setup ${version}.${ext}"
+    }
   }
 }
